@@ -4,8 +4,10 @@ import ErrorHandler from "../middlewares/error.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
 
-export const patientRegister = catchAsyncErrors(async (req, res, next) => {
-  const { firstName, lastName, email, phone, nic, dob, gender, password } =
+export const patientRegister = async (req, res, next) => {
+  try {
+
+    const { firstName, lastName, email, phone, nic, dob, gender, password } =
     req.body;
   if (
     !firstName ||
@@ -37,18 +39,19 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     role: "Patient",
   });
   generateToken(user, "User Registered!", 200, res);
-});
+
+    
+  } catch (error) {
+     console.log(error)
+  }
+}
 
 export const login = catchAsyncErrors(async (req, res, next) => {
-  const { email, password, confirmPassword, role } = req.body;
-  if (!email || !password || !confirmPassword || !role) {
+  const { email, password, role } = req.body;
+  if (!email || !password  || !role) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
-  if (password !== confirmPassword) {
-    return next(
-      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
-    );
-  }
+  
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
     return next(new ErrorHandler("Invalid Email Or Password!", 400));
